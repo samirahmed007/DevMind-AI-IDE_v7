@@ -1,10 +1,12 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { AppState, FileSystemItem, ChatMessage, FileEdit, SettingsState, FileAttachment, AgentAction, FileCreate, ProviderType, AppTheme, ModelConfig } from './types';
+import { AppState, FileSystemItem, ChatMessage, FileEdit, SettingsState, FileAttachment, AgentAction, FileCreate, ProviderType, AppTheme, ModelConfig, LogEntry, LogLevel } from './types';
 import { Explorer } from './components/Explorer';
 import { EditorArea } from './components/Editor';
 import { ChatPanel } from './components/Chat';
 import { SettingsPanel } from './components/Settings';
+import { LogStatus } from './components/LogStatus';
+import { AboutModal } from './components/AboutModal';
 import { Icons } from './components/Icon';
 import { DEFAULT_SETTINGS, DEFAULT_MODELS, THEMES } from './constants';
 import { streamResponse, enhancePrompt } from './services/aiService';
@@ -34,6 +36,11 @@ export default function App() {
     const [showSidebar, setShowSidebar] = useState(true);
     const [showChat, setShowChat] = useState(true);
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const [showAbout, setShowAbout] = useState(false);
+    
+    // Log Status State
+    const [logs, setLogs] = useState<LogEntry[]>([]);
+    const [isLogsExpanded, setIsLogsExpanded] = useState(false);
     
     const [settings, setSettings] = useState<SettingsState>(() => {
         const saved = localStorage.getItem('devmind_settings');
@@ -47,6 +54,21 @@ export default function App() {
         localStorage.setItem('devmind_settings', JSON.stringify(settings));
         document.documentElement.className = `theme-${settings.theme}`;
     }, [settings]);
+
+    const addLog = (message: string, level: LogLevel = 'info') => {
+        const newLog: LogEntry = {
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+            message,
+            level,
+            timestamp: Date.now()
+        };
+        setLogs(prev => [...prev, newLog]);
+        
+        // Auto-expand on error
+        if (level === 'error') {
+            setIsLogsExpanded(true);
+        }
+    };
 
     const openFile = (id: string) => {
         if (!openFileIds.includes(id)) setOpenFileIds(prev => [...prev, id]);
@@ -82,6 +104,7 @@ export default function App() {
             parentId: parentId || null
         };
         setFiles(prev => ({ ...prev, [id]: newFile }));
+        addLog(`File created: ${name}`, 'success');
         openFile(id);
     };
 
@@ -96,6 +119,7 @@ export default function App() {
             parentId: parentId || null
         };
         setFiles(prev => ({ ...prev, [id]: newFolder }));
+        addLog(`Folder created: ${name}`, 'success');
     };
 
     const handleUpload = (fileList: FileList) => {
@@ -111,6 +135,7 @@ export default function App() {
                     language: name.split('.').pop() || 'plaintext'
                 };
                 setFiles(prev => ({ ...prev, [id]: newFile }));
+                addLog(`Uploaded: ${name}`, 'info');
                 openFile(id);
             };
             if (file.type.startsWith('image') || file.type === 'application/pdf') reader.readAsDataURL(file);
@@ -119,13 +144,14 @@ export default function App() {
     };
 
     const handleDelete = (id: string) => {
+        const itemName = files[id]?.name;
         setFiles(prev => { 
             const next = { ...prev }; 
             const idsToDelete = new Set([id]);
             let count;
             do {
                 count = idsToDelete.size;
-                Object.values(next).forEach(f => {
+                (Object.values(next) as FileSystemItem[]).forEach(f => {
                     if (f.parentId && idsToDelete.has(f.parentId)) {
                         idsToDelete.add(f.id);
                     }
@@ -140,6 +166,7 @@ export default function App() {
 
             return next; 
         });
+        addLog(`Deleted item: ${itemName}`, 'warning');
     };
 
     const handleMoveItem = (itemId: string, targetParentId: string | null) => {
@@ -154,6 +181,7 @@ export default function App() {
             }
             const targetParent = targetParentId ? prev[targetParentId] : null;
             const newPath = targetParent ? `${targetParent.path}/${item.name}` : `/${item.name}`;
+            addLog(`Moved ${item.name} to ${targetParent ? targetParent.path : 'root'}`, 'info');
             return {
                 ...prev,
                 [itemId]: { ...item, parentId: targetParentId, path: newPath }
@@ -170,10 +198,11 @@ export default function App() {
             document.body.appendChild(element);
             element.click();
             document.body.removeChild(element);
+            addLog(`Downloaded file: ${item.name}`, 'info');
         } else {
             const folderContent: Record<string, FileSystemItem> = {};
             const getDescendants = (parentId: string) => {
-                Object.values(files).forEach(f => {
+                (Object.values(files) as FileSystemItem[]).forEach(f => {
                     if (f.parentId === parentId) {
                         folderContent[f.id] = f;
                         if (f.type === 'folder') getDescendants(f.id);
@@ -189,6 +218,7 @@ export default function App() {
             document.body.appendChild(downloadAnchorNode);
             downloadAnchorNode.click();
             downloadAnchorNode.remove();
+            addLog(`Exported folder: ${item.name}`, 'info');
         }
     };
 
@@ -200,10 +230,12 @@ export default function App() {
         document.body.appendChild(downloadAnchorNode);
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
+        addLog(`Workspace exported`, 'success');
     };
 
     const handleClearChat = () => {
         setMessages(INITIAL_MESSAGES);
+        addLog(`Chat history cleared`, 'info');
     };
 
     const handleApplyAction = (action: AgentAction) => {
@@ -214,7 +246,7 @@ export default function App() {
             const allFiles = Object.values(files) as FileSystemItem[];
             const targetFile = allFiles.find(f => f.path === editData.filePath || f.path === '/' + editData.filePath || f.name === editData.filePath);
             if (!targetFile || !targetFile.content) {
-                alert(`File ${editData.filePath} not found in workspace.`);
+                addLog(`Patch failed: File ${editData.filePath} not found`, 'error');
                 return;
             }
             const content = targetFile.content;
@@ -222,6 +254,7 @@ export default function App() {
                 const newContent = content.replace(searchStr, replaceStr);
                 setFiles(prev => ({ ...prev, [targetFile.id]: { ...prev[targetFile.id], content: newContent } }));
                 action.applied = true;
+                addLog(`Patch applied to ${targetFile.name}`, 'success');
                 return;
             }
             const normalize = (s: string) => s.replace(/\r\n/g, '\n').replace(/[ \t]+$/gm, '').trim();
@@ -234,38 +267,11 @@ export default function App() {
                     const newContent = content.substring(0, index) + replaceStr + content.substring(index + trimmedSearch.length);
                     setFiles(prev => ({ ...prev, [targetFile.id]: { ...prev[targetFile.id], content: newContent } }));
                     action.applied = true;
+                    addLog(`Fuzzy patch applied to ${targetFile.name}`, 'success');
                     return;
                 }
             }
-            const structural = (s: string) => s.replace(/\s+/g, '');
-            const structContent = structural(content);
-            const structSearch = structural(searchStr);
-            if (structContent.includes(structSearch)) {
-                let searchIdx = 0;
-                let startPos = -1;
-                let endPos = -1;
-                for (let i = 0; i < content.length; i++) {
-                    if (/\s/.test(content[i])) continue;
-                    if (content[i] === structSearch[searchIdx]) {
-                        if (searchIdx === 0) startPos = i;
-                        searchIdx++;
-                        if (searchIdx === structSearch.length) {
-                            endPos = i + 1;
-                            break;
-                        }
-                    } else {
-                        searchIdx = 0;
-                        startPos = -1;
-                    }
-                }
-                if (startPos !== -1 && endPos !== -1) {
-                    const newContent = content.substring(0, startPos) + replaceStr + content.substring(endPos);
-                    setFiles(prev => ({ ...prev, [targetFile.id]: { ...prev[targetFile.id], content: newContent } }));
-                    action.applied = true;
-                    return;
-                }
-            }
-            alert(`Could not patch ${targetFile.name}. The code block may have changed since the AI saw it.`);
+            addLog(`Structural mismatch during patch of ${targetFile.name}`, 'error');
         } else if (action.type === 'create') {
             const data = action.data as FileCreate;
             handleCreateFile(data.path.split('/').pop() || data.path, null, data.content);
@@ -277,6 +283,7 @@ export default function App() {
         const userMsg: ChatMessage = { id: Date.now().toString(), role: 'user', content: text, timestamp: Date.now(), attachments };
         setMessages(prev => [...prev, userMsg]);
         setIsStreaming(true);
+        addLog(`Streaming request to AI pipeline...`, 'info');
 
         const allModels = [...DEFAULT_MODELS, ...settings.customModels];
         const activeModel = allModels.find(m => m.id === settings.activeModelId) || allModels[0];
@@ -318,9 +325,11 @@ export default function App() {
             const actions = detectActions(fullResponse);
             if (actions.length > 0) {
                 setMessages(prev => prev.map(m => m.id === assistantMsgId ? { ...m, pendingActions: actions } : m));
+                addLog(`AI suggested ${actions.length} filesystem modifications`, 'info');
             }
         } catch (error: any) {
             setMessages(prev => [...prev, { id: Date.now().toString(), role: 'system', content: `Error: ${error.message}`, timestamp: Date.now() }]);
+            addLog(`AI Pipeline Error: ${error.message}`, 'error');
         } finally {
             setIsStreaming(false);
         }
@@ -329,7 +338,7 @@ export default function App() {
     const combinedModels = [...DEFAULT_MODELS, ...settings.customModels];
 
     return (
-        <div className="flex flex-col h-screen w-screen bg-ide-bg text-ide-text transition-colors duration-200 overflow-hidden">
+        <div className="flex flex-col h-screen w-screen bg-ide-bg text-ide-text transition-colors duration-200 overflow-hidden relative">
             <div className="h-10 bg-ide-panel border-b border-ide-border flex items-center justify-between px-4 shrink-0 shadow-sm z-20">
                 <div className="flex items-center space-x-6">
                     <span className="font-bold text-ide-accent flex items-center gap-2 text-sm uppercase tracking-wider select-none cursor-default">
@@ -366,10 +375,11 @@ export default function App() {
                     <button onClick={() => setSettingsOpen(true)} className="p-1.5 rounded hover:bg-ide-activity transition-colors" title="IDE Settings"><Icons.Settings size={16} /></button>
                 </div>
             </div>
-            <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 flex overflow-hidden relative">
                 <div className="w-12 bg-ide-activity flex flex-col items-center py-4 space-y-6 border-r border-ide-border shrink-0 z-10 shadow-lg">
                     <div className={`cursor-pointer p-2 rounded-lg transition-all ${showSidebar ? 'text-ide-accent bg-ide-accent/10 shadow-inner' : 'text-gray-500 hover:text-white hover:bg-ide-panel'}`} onClick={() => setShowSidebar(!showSidebar)}><Icons.Files size={24} /></div>
                     <div className="flex-1"></div>
+                    <div className="cursor-pointer text-gray-500 hover:text-white p-2" onClick={() => setShowAbout(true)} title="About DevMind"><Icons.Info size={24} /></div>
                     <div className="cursor-pointer text-gray-500 hover:text-white p-2 mb-2" onClick={() => setSettingsOpen(true)} title="Settings"><Icons.Settings size={24} /></div>
                 </div>
                 {showSidebar && (
@@ -379,6 +389,9 @@ export default function App() {
                 )}
                 <div className="flex-1 min-w-0 bg-ide-bg relative flex flex-col">
                     <EditorArea openFiles={openFileIds.map(id => files[id]).filter(Boolean)} activeFileId={activeFileId} settings={settings} onChange={handleEditorChange} onMount={(editor, monaco) => { editorRef.current = editor; monacoRef.current = monaco; }} onTabClick={openFile} onTabClose={closeFile} />
+                    
+                    {/* Log Status Component Integrated Here */}
+                    <LogStatus logs={logs} isExpanded={isLogsExpanded} onToggle={setIsLogsExpanded} onClear={() => setLogs([])} />
                 </div>
                 {showChat && (
                     <div className="w-96 flex-shrink-0 border-l border-ide-border shadow-2xl z-10 animate-in slide-in-from-right duration-200">
@@ -388,15 +401,20 @@ export default function App() {
             </div>
             <div className="h-6 bg-ide-sidebar border-t border-ide-border flex items-center justify-between px-3 text-[10px] font-medium text-gray-500 shrink-0 select-none">
                 <div className="flex items-center space-x-4">
-                    <span className="flex items-center"><Icons.GitBranch size={10} className="mr-1.5 text-ide-accent"/> main</span>
+                    <span className="flex items-center cursor-pointer hover:text-white transition-colors" onClick={() => setIsLogsExpanded(!isLogsExpanded)}>
+                        <Icons.Terminal size={10} className={`mr-1.5 ${logs.some(l => l.level === 'error') ? 'text-red-500' : 'text-ide-accent'}`}/> 
+                        Console {logs.length > 0 && `(${logs.filter(l => l.level === 'error').length} errors)`}
+                    </span>
                     <span className="opacity-70">{Object.keys(files).length} objects in workspace</span>
                 </div>
                 <div className="flex items-center space-x-4 uppercase tracking-tighter">
                     <span className="bg-ide-activity px-1.5 py-0.5 rounded border border-ide-border">{settings.theme}</span>
                     <span className="bg-ide-activity px-1.5 py-0.5 rounded border border-ide-border">{settings.activeModelId}</span>
+                    <span className="opacity-70">Developed by Samir Uddin Ahmed</span>
                 </div>
             </div>
             <SettingsPanel isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} settings={settings} onSave={setSettings} />
+            <AboutModal isOpen={showAbout} onClose={() => setShowAbout(false)} />
         </div>
     );
 }

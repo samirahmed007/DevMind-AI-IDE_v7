@@ -3,6 +3,15 @@ export type ProviderType = 'google' | 'openai' | 'anthropic' | 'openrouter' | 'l
 
 export type AppTheme = 'dark' | 'light' | 'midnight' | 'solarized';
 
+export type LogLevel = 'info' | 'error' | 'warning' | 'success';
+
+export interface LogEntry {
+  id: string;
+  message: string;
+  level: LogLevel;
+  timestamp: number;
+}
+
 export interface ModelConfig {
   id: string;
   name: string;
@@ -39,7 +48,7 @@ export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
   thought?: string; 
-  modelName?: string; // Tracks which model sent this message
+  modelName?: string; 
   timestamp: number;
   attachments?: FileAttachment[];
   pendingActions?: AgentAction[]; 

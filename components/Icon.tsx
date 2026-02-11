@@ -5,7 +5,8 @@ import {
   Search, X, Plus, ChevronRight, ChevronDown, Save, 
   Trash2, Upload, RefreshCw, Wand2, Check, Copy, Monitor, 
   Image as ImageIcon, FileCode, FileText, LayoutTemplate, 
-  Code, GitBranch, AlertCircle, Files, FolderPlus, Brain
+  Code, GitBranch, AlertCircle, Files, FolderPlus, Brain,
+  Terminal, Info, Bell, ExternalLink
 } from 'lucide-react';
 
 export const Icons = {
@@ -13,7 +14,8 @@ export const Icons = {
   Search, X, Plus, ChevronRight, ChevronDown, Save,
   Trash2, Upload, RefreshCw, Wand2, Check, Copy, Monitor,
   Image: ImageIcon, FileCode, FileText, LayoutTemplate,
-  Code, GitBranch, AlertCircle, Files, FolderPlus, Brain
+  Code, GitBranch, AlertCircle, Files, FolderPlus, Brain,
+  Terminal, Info, Bell, ExternalLink
 };
 
 export default Icons;
