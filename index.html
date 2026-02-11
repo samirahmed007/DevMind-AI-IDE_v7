@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DevMind AI IDE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              ide: {
+                bg: 'var(--ide-bg)',
+                sidebar: 'var(--ide-sidebar)',
+                activity: 'var(--ide-activity)',
+                panel: 'var(--ide-panel)',
+                border: 'var(--ide-border)',
+                accent: 'var(--ide-accent)',
+                text: 'var(--ide-text)',
+                textHover: 'var(--ide-text-hover)',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      :root.theme-dark {
+        --ide-bg: #1e1e1e;
+        --ide-sidebar: #252526;
+        --ide-activity: #333333;
+        --ide-panel: #1e1e1e;
+        --ide-border: #3e3e42;
+        --ide-accent: #007fd4;
+        --ide-text: #cccccc;
+        --ide-text-hover: #ffffff;
+      }
+      :root.theme-light {
+        --ide-bg: #ffffff;
+        --ide-sidebar: #f3f3f3;
+        --ide-activity: #2c2c2c;
+        --ide-panel: #ffffff;
+        --ide-border: #e5e5e5;
+        --ide-accent: #007acc;
+        --ide-text: #3b3b3b;
+        --ide-text-hover: #000000;
+      }
+      :root.theme-midnight {
+        --ide-bg: #0b0e14;
+        --ide-sidebar: #11151c;
+        --ide-activity: #1c222d;
+        --ide-panel: #0b0e14;
+        --ide-border: #1f2937;
+        --ide-accent: #3b82f6;
+        --ide-text: #94a3b8;
+        --ide-text-hover: #f8fafc;
+      }
+      :root.theme-solarized {
+        --ide-bg: #002b36;
+        --ide-sidebar: #073642;
+        --ide-activity: #586e75;
+        --ide-panel: #002b36;
+        --ide-border: #586e75;
+        --ide-accent: #268bd2;
+        --ide-text: #839496;
+        --ide-text-hover: #93a1a1;
+      }
+
+      ::-webkit-scrollbar { width: 10px; height: 10px; }
+      ::-webkit-scrollbar-track { background: var(--ide-bg); }
+      ::-webkit-scrollbar-thumb { background: var(--ide-border); border-radius: 5px; }
+      ::-webkit-scrollbar-thumb:hover { opacity: 0.8; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom": "https://esm.sh/react-dom@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.40.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
+    "@monaco-editor/react": "https://esm.sh/@monaco-editor/react@^4.7.0"
+  }
+}
+</script>
+</head>
+  <body class="bg-ide-bg text-ide-text overflow-hidden h-screen w-screen m-0 p-0 font-sans antialiased">
+    <div id="root"></div>
+  </body>
+</html>

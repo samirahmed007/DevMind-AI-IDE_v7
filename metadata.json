@@ -1,0 +1,5 @@
+{
+  "name": "DevMind AI IDE",
+  "description": "A premium, browser-based AI IDE featuring visual analysis, multi-provider support (Gemini, OpenRouter, Local), and agentic file modification capabilities.",
+  "requestFramePermissions": []
+}
