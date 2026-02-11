@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Icons } from './Icon';
 
@@ -11,41 +10,41 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="bg-ide-panel border border-ide-border w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-        <div className="p-6 text-center space-y-6">
-          <div className="mx-auto w-16 h-16 bg-ide-accent/10 rounded-2xl flex items-center justify-center text-ide-accent">
-            <Icons.Code size={32} />
+    <div className="fixed inset-0 bg-black/90 z-[300] flex items-center justify-center p-6 backdrop-blur-2xl animate-in fade-in duration-300">
+      <div className="bg-ide-panel border border-ide-border w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="p-10 text-center space-y-8">
+          <div className="mx-auto w-24 h-24 bg-ide-accent/15 rounded-[32px] flex items-center justify-center text-ide-accent shadow-xl border border-ide-accent/20">
+            <Icons.Code size={48} strokeWidth={2.5} />
           </div>
           
-          <div className="space-y-2">
-            <h2 className="text-xl font-bold text-white tracking-tight">DevMind AI IDE</h2>
-            <p className="text-xs text-ide-accent font-bold uppercase tracking-widest">Version 1.0.0 Stable</p>
+          <div className="space-y-3">
+            <h2 className="text-2xl font-black text-white tracking-[0.1em] uppercase">DevMind IDE</h2>
+            <p className="text-[11px] text-ide-accent font-black uppercase tracking-[0.4em]">v1.0.0 Neural Edition</p>
           </div>
 
-          <div className="bg-ide-activity/50 p-4 rounded-xl border border-ide-border text-left space-y-3">
-            <div className="flex items-center text-sm text-gray-300">
-              <Icons.Info size={14} className="mr-3 text-ide-accent" />
-              <span>Professional AI Coding Workspace</span>
+          <div className="bg-ide-activity/30 p-6 rounded-3xl border border-white/5 text-left space-y-4 shadow-inner">
+            <div className="flex items-center text-[13px] font-bold text-gray-300">
+              <Icons.Brain size={18} strokeWidth={2.5} className="mr-4 text-ide-accent" />
+              <span>Agentic Neural Core</span>
             </div>
-            <div className="flex items-center text-sm text-gray-300">
-              <Icons.Monitor size={14} className="mr-3 text-ide-accent" />
-              <span>Multi-Provider Neural Architecture</span>
+            <div className="flex items-center text-[13px] font-bold text-gray-300">
+              <Icons.Monitor size={18} strokeWidth={2.5} className="mr-4 text-ide-accent" />
+              <span>Multi-Pipeline Workspace</span>
             </div>
-            <div className="pt-2 border-t border-ide-border">
-              <p className="text-[10px] text-gray-500 uppercase font-bold tracking-tighter">Developed by</p>
-              <p className="text-sm font-bold text-white mt-1">Samir Uddin Ahmed</p>
+            <div className="pt-4 border-t border-white/5">
+              <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">Developed by</p>
+              <p className="text-base font-black text-white tracking-wide">SAMIR UDDIN AHMED</p>
             </div>
           </div>
 
-          <div className="flex flex-col space-y-3">
+          <div className="space-y-4">
              <button 
                 onClick={onClose}
-                className="w-full bg-ide-accent text-white py-3 rounded-xl text-sm font-bold hover:brightness-110 transition-all active:scale-95"
+                className="w-full bg-ide-accent hover:bg-blue-600 text-white py-4 rounded-2xl text-[12px] font-black uppercase tracking-widest shadow-2xl transition-all active:scale-95"
              >
-                Close Dashboard
+                Resume Session
              </button>
-             <p className="text-[10px] text-gray-500 italic">Built for the future of software engineering.</p>
+             <p className="text-[10px] text-gray-500 italic font-medium">The future of software architecture, today.</p>
           </div>
         </div>
       </div>

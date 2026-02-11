@@ -68,27 +68,27 @@ const FileItem: React.FC<{
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                className={`flex items-center py-1 cursor-pointer hover:bg-ide-activity text-sm select-none transition-colors 
-                    ${activeId === item.id ? 'bg-ide-activity text-white' : 'text-gray-400'}
+                className={`flex items-center py-1.5 cursor-pointer hover:bg-ide-activity text-sm select-none transition-colors 
+                    ${activeId === item.id ? 'bg-ide-activity text-white font-bold' : 'text-gray-400'}
                     ${isDragOver ? 'bg-ide-accent/20 ring-1 ring-ide-accent ring-inset' : ''}
                 `}
-                style={{ paddingLeft: `${depth * 12 + 10}px` }}
+                style={{ paddingLeft: `${depth * 14 + 10}px` }}
                 onClick={() => {
                     if (item.type === 'folder') setIsCollapsed(!isCollapsed);
                     else onClick(item.id);
                 }}
             >
-                <Icon size={14} className={`mr-2 opacity-80 ${item.type === 'folder' ? 'text-ide-accent' : ''}`} />
+                <Icon size={16} strokeWidth={2.5} className={`mr-2.5 opacity-80 ${item.type === 'folder' ? 'text-ide-accent' : ''}`} />
                 <span className="truncate flex-1">{item.name}</span>
                 
-                <div className="opacity-0 group-hover:opacity-100 flex items-center space-x-1 pr-2 transition-opacity">
+                <div className="opacity-0 group-hover:opacity-100 flex items-center space-x-1.5 pr-2 transition-opacity">
                     {item.type === 'folder' && (
                         <>
                             <button onClick={(e) => { e.stopPropagation(); onNewItem('file', item.id); }} className="p-1 hover:text-white" title="New File">
-                                <Icons.Plus size={12} />
+                                <Icons.Plus size={14} strokeWidth={2.5} />
                             </button>
                             <button onClick={(e) => { e.stopPropagation(); onNewItem('folder', item.id); }} className="p-1 hover:text-white" title="New Folder">
-                                <Icons.FolderPlus size={12} />
+                                <Icons.FolderPlus size={14} strokeWidth={2.5} />
                             </button>
                         </>
                     )}
@@ -97,14 +97,14 @@ const FileItem: React.FC<{
                         className="p-1 hover:text-white transition-colors"
                         title="Download"
                     >
-                        <Icons.Upload size={12} className="rotate-180" />
+                        <Icons.Upload size={14} strokeWidth={2.5} className="rotate-180" />
                     </button>
                     <button 
                         onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}
                         className="p-1 hover:text-red-500 transition-colors"
                         title="Delete"
                     >
-                        <Icons.Trash2 size={12} />
+                        <Icons.Trash2 size={14} strokeWidth={2.5} />
                     </button>
                 </div>
             </div>
@@ -122,7 +122,7 @@ const FileItem: React.FC<{
                             onNewItem={onNewItem}
                             onMoveItem={onMoveItem}
                             onDownloadItem={onDownloadItem}
-                            childrenItems={[]} // Recursive logic handled in Explorer renderTree
+                            childrenItems={[]} 
                         />
                     ))}
                 </div>
@@ -177,14 +177,10 @@ export const Explorer: React.FC<ExplorerProps> = ({
     const handleRootDrop = (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragOverRoot(false);
-        
-        // Handle external files
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
             onUpload(e.dataTransfer.files);
             return;
         }
-
-        // Handle internal moves to root
         const draggedId = e.dataTransfer.getData('application/devmind-item-id');
         if (draggedId) {
             onMoveItem(draggedId, null);
@@ -218,15 +214,15 @@ export const Explorer: React.FC<ExplorerProps> = ({
                         childrenItems={children}
                     />
                     {isTargetParent && namingState && (
-                        <div className="flex items-center py-1" style={{ paddingLeft: `${(depth + 1) * 12 + 10}px` }}>
-                            {namingState.type === 'folder' ? <Icons.Folder size={14} className="mr-2 text-ide-accent" /> : <Icons.File size={14} className="mr-2 opacity-80" />}
+                        <div className="flex items-center py-1.5" style={{ paddingLeft: `${(depth + 1) * 14 + 10}px` }}>
+                            {namingState.type === 'folder' ? <Icons.Folder size={16} strokeWidth={2.5} className="mr-2.5 text-ide-accent" /> : <Icons.File size={16} strokeWidth={2.5} className="mr-2.5 opacity-80" />}
                             <form onSubmit={handleNamingSubmit} className="flex-1 pr-4">
                                 <input
                                     ref={inputRef}
                                     value={newName}
                                     onChange={(e) => setNewName(e.target.value)}
                                     onBlur={() => handleNamingSubmit()}
-                                    className="w-full bg-ide-activity border border-ide-accent/50 text-xs text-white px-1 outline-none rounded"
+                                    className="w-full bg-ide-activity border border-ide-accent/50 text-xs text-white px-2 py-1 outline-none rounded font-bold"
                                     placeholder={`New ${namingState.type}...`}
                                 />
                             </form>
@@ -247,10 +243,10 @@ export const Explorer: React.FC<ExplorerProps> = ({
         >
             <div className="flex items-center justify-between p-3 text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-ide-border shrink-0">
                 <span>Explorer</span>
-                <div className="flex items-center space-x-1">
-                    <button onClick={() => setNamingState({ type: 'file', parentId: null })} className="hover:text-white p-1" title="New File"><Icons.Plus size={14} /></button>
-                    <button onClick={() => setNamingState({ type: 'folder', parentId: null })} className="hover:text-white p-1" title="New Folder"><Icons.FolderPlus size={14} /></button>
-                    <button onClick={() => fileInputRef.current?.click()} className="hover:text-white p-1" title="Upload Files"><Icons.Upload size={14} /></button>
+                <div className="flex items-center space-x-2">
+                    <button onClick={() => setNamingState({ type: 'file', parentId: null })} className="hover:text-white p-1" title="New File"><Icons.Plus size={18} strokeWidth={2.5} /></button>
+                    <button onClick={() => setNamingState({ type: 'folder', parentId: null })} className="hover:text-white p-1" title="New Folder"><Icons.FolderPlus size={18} strokeWidth={2.5} /></button>
+                    <button onClick={() => fileInputRef.current?.click()} className="hover:text-white p-1" title="Upload Files"><Icons.Upload size={18} strokeWidth={2.5} /></button>
                 </div>
             </div>
             
@@ -258,20 +254,20 @@ export const Explorer: React.FC<ExplorerProps> = ({
 
             <div className="flex-1 overflow-y-auto pt-2 no-scrollbar">
                 {!namingState && fileList.length === 0 && (
-                    <div className="p-4 text-center text-gray-500 text-[10px] italic">
-                        Empty workspace
+                    <div className="p-4 text-center text-gray-500 text-[10px] italic font-bold uppercase tracking-widest opacity-60">
+                        Workspace Clear
                     </div>
                 )}
                 {namingState?.parentId === null && (
-                    <div className="flex items-center py-1 px-3">
-                        {namingState.type === 'folder' ? <Icons.Folder size={14} className="mr-2 text-ide-accent" /> : <Icons.File size={14} className="mr-2 opacity-80" />}
+                    <div className="flex items-center py-2 px-4">
+                        {namingState.type === 'folder' ? <Icons.Folder size={16} strokeWidth={2.5} className="mr-2.5 text-ide-accent" /> : <Icons.File size={16} strokeWidth={2.5} className="mr-2.5 opacity-80" />}
                         <form onSubmit={handleNamingSubmit} className="flex-1">
                             <input
                                 ref={inputRef}
                                 value={newName}
                                 onChange={(e) => setNewName(e.target.value)}
                                 onBlur={() => handleNamingSubmit()}
-                                className="w-full bg-ide-activity border border-ide-accent/50 text-xs text-white px-1 outline-none rounded"
+                                className="w-full bg-ide-activity border border-ide-accent/50 text-xs text-white px-2 py-1 outline-none rounded font-bold"
                                 placeholder={`New ${namingState.type}...`}
                             />
                         </form>
